@@ -1,0 +1,42 @@
+{
+    "actorSpecification": 1,
+    "name": "linkedin-job-scraper",
+    "title": "LinkedIn Job Scraper",
+    "description": "Scrape LinkedIn jobs by title, location, type, experience, recency and applicant count. Runs parallel instances per title.",
+    "version": "1.0",
+    "input": "./INPUT_SCHEMA.json",
+    "dockerfile": "./Dockerfile",
+    "storages": {
+        "dataset": {
+            "actorSpecification": 1,
+            "title": "LinkedIn Jobs",
+            "views": {
+                "overview": {
+                    "title": "Jobs Overview",
+                    "transformation": {
+                        "fields": [
+                            "search_title", "title", "company", "location",
+                            "workplace_type", "seniority_level", "employment_type",
+                            "posted_date", "applicant_count", "easy_apply",
+                            "job_url", "salary"
+                        ]
+                    },
+                    "display": {
+                        "component": "table",
+                        "properties": {
+                            "title":           { "label": "Job Title" },
+                            "company":         { "label": "Company" },
+                            "location":        { "label": "Location" },
+                            "workplace_type":  { "label": "Type" },
+                            "seniority_level": { "label": "Level" },
+                            "posted_date":     { "label": "Posted" },
+                            "applicant_count": { "label": "Applicants" },
+                            "easy_apply":      { "label": "Easy Apply" },
+                            "job_url":         { "label": "Apply", "format": "link" }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

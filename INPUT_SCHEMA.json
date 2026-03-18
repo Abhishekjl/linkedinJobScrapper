@@ -1,0 +1,128 @@
+{
+    "title": "LinkedIn Job Scraper",
+    "description": "Scrape LinkedIn jobs by title, location, job type, experience and more.",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "titles": {
+            "title": "Job Titles",
+            "type": "array",
+            "description": "List of job titles to search. Each runs as a separate instance.",
+            "editor": "stringList",
+            "default": ["Software Engineer"],
+            "prefill": ["AI Engineer", "ML Engineer"]
+        },
+        "location": {
+            "title": "Location",
+            "type": "string",
+            "description": "Country or city. Use 'Worldwide' or 'Remote' for global.",
+            "editor": "textfield",
+            "default": "United States",
+            "prefill": "India"
+        },
+        "job_type": {
+            "title": "Job Type",
+            "type": "array",
+            "description": "Filter by workplace type.",
+            "editor": "select",
+            "enum": ["remote", "hybrid", "onsite"],
+            "enumTitles": ["Remote", "Hybrid", "On-site"],
+            "default": []
+        },
+        "experience_level": {
+            "title": "Experience Level",
+            "type": "array",
+            "description": "Filter by seniority level.",
+            "editor": "select",
+            "enum": ["internship", "entry", "mid", "senior", "director", "executive"],
+            "enumTitles": ["Internship", "Entry Level", "Mid Level", "Senior", "Director", "Executive"],
+            "default": []
+        },
+        "date_posted": {
+            "title": "Date Posted",
+            "type": "string",
+            "description": "Recency of job posting.",
+            "editor": "select",
+            "enum": ["24h", "week", "month", "any"],
+            "enumTitles": ["Past 24 Hours", "Past Week", "Past Month", "Any Time"],
+            "default": "week"
+        },
+        "sort_by": {
+            "title": "Sort By",
+            "type": "string",
+            "description": "How to sort results.",
+            "editor": "select",
+            "enum": ["recent", "relevant"],
+            "enumTitles": ["Most Recent", "Most Relevant"],
+            "default": "recent"
+        },
+        "count": {
+            "title": "Jobs Per Title",
+            "type": "integer",
+            "description": "How many jobs to return per title. Max ~500.",
+            "editor": "number",
+            "default": 25,
+            "minimum": 1,
+            "maximum": 500
+        },
+        "easy_apply": {
+            "title": "Easy Apply Only",
+            "type": "boolean",
+            "description": "Only return jobs with LinkedIn Easy Apply.",
+            "default": false
+        },
+        "under_10_applicants": {
+            "title": "Under 10 Applicants",
+            "type": "boolean",
+            "description": "Only return jobs with fewer than 10 applicants.",
+            "default": false
+        },
+        "fetch_details": {
+            "title": "Fetch Full Job Details",
+            "type": "boolean",
+            "description": "Fetch individual job pages for description, skills, poster info. Slower but richer.",
+            "default": true
+        },
+        "min_applicants": {
+            "title": "Min Applicants",
+            "type": "integer",
+            "description": "Only return jobs with at least this many applicants.",
+            "editor": "number",
+            "nullable": true,
+            "default": null
+        },
+        "max_applicants": {
+            "title": "Max Applicants",
+            "type": "integer",
+            "description": "Only return jobs with at most this many applicants.",
+            "editor": "number",
+            "nullable": true,
+            "default": null
+        },
+        "company_ids": {
+            "title": "Company IDs",
+            "type": "array",
+            "description": "Filter by specific LinkedIn company IDs.",
+            "editor": "stringList",
+            "default": []
+        },
+        "industry": {
+            "title": "Industry",
+            "type": "string",
+            "description": "Filter by industry.",
+            "editor": "select",
+            "enum": ["", "technology", "finance", "healthcare", "education", "retail", "manufacturing", "consulting", "media", "government"],
+            "enumTitles": ["Any", "Technology", "Finance", "Healthcare", "Education", "Retail", "Manufacturing", "Consulting", "Media", "Government"],
+            "default": ""
+        },
+        "proxy": {
+            "title": "Proxy URL",
+            "type": "string",
+            "description": "Optional proxy. Format: http://user:pass@host:port",
+            "editor": "textfield",
+            "nullable": true,
+            "default": null
+        }
+    },
+    "required": ["titles"]
+}
