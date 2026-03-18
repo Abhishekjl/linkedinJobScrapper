@@ -121,6 +121,12 @@
             "enumTitles": ["Any", "Technology", "Finance", "Healthcare", "Education", "Retail", "Manufacturing", "Consulting", "Media", "Government"],
             "default": ""
         },
+        "fetch_company_details": {
+            "title": "Fetch Company Details",
+            "type": "boolean",
+            "description": "Fetch LinkedIn company pages to get follower count and employee count. Adds one request per unique company.",
+            "default": false
+        },
         "proxy": {
             "title": "Proxy URL",
             "type": "string",

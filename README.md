@@ -9,6 +9,7 @@ Scrape LinkedIn job listings without an API key. Search by job title, location, 
 - Searches LinkedIn's public job listings for one or more job titles
 - Runs all titles **concurrently** for fast results
 - Optionally fetches full job detail pages for rich metadata (description, skills, applicant count, hiring manager)
+- Optionally fetches company pages to enrich results with **follower count** and **employee count**
 - Filters results by applicant count, workplace type, experience level, industry, and more
 - No LinkedIn account or API key required
 
@@ -41,8 +42,11 @@ Each job result is a JSON object with the following fields:
 | `applicant_count` | Number of applicants (if shown by LinkedIn) |
 | `skills` | List of skills extracted from the job description |
 | `job_poster` | Object with `name`, `title`, and `linkedin_url` of the hiring manager |
+| `company_followers` | LinkedIn follower count of the hiring company (e.g. `"1,234,567"`) *(requires `fetch_company_details: true`)* |
+| `company_employee_count` | Number of employees on LinkedIn (e.g. `"10,001+"` or `"51-200"`) *(requires `fetch_company_details: true`)* |
 
 > Fields from `description` onwards are only populated when **Fetch Full Job Details** is enabled.
+> `company_followers` and `company_employee_count` are only populated when **Fetch Company Details** is enabled.
 
 ---
 
@@ -83,6 +87,7 @@ These filters are applied **after** scraping, based on data from the job detail 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `fetch_details` | `boolean` | `true` | Fetch individual job pages for full description, skills, applicant count, and hiring manager info. Slower but much richer output. |
+| `fetch_company_details` | `boolean` | `false` | Fetch each unique company's LinkedIn page to get follower count and employee count. Adds one extra request per unique company in the results. |
 | `proxy` | `string` | `null` | Optional proxy URL. Format: `http://user:pass@host:port` |
 
 ---
@@ -101,6 +106,7 @@ These filters are applied **after** scraping, based on data from the job detail 
     "under_10_applicants": false,
     "count": 50,
     "fetch_details": true,
+    "fetch_company_details": false,
     "min_applicants": null,
     "max_applicants": 300,
     "company_ids": [],
@@ -137,6 +143,7 @@ Any other city or country name can be typed freely — it will be passed as a te
 - **Multiple titles**: Add several titles (e.g. `["Data Scientist", "ML Engineer", "AI Engineer"]`) to cast a wider net in one run.
 - **Finding low-competition jobs**: Enable `under_10_applicants` or set `max_applicants` to a small number like `50`.
 - **Speed vs. richness**: Disable `fetch_details` to run much faster with basic card data only. Enable it to get descriptions, skills, and hiring manager info.
+- **Company insights**: Enable `fetch_company_details` to enrich results with follower count and employee count. Only one request is made per unique company across all results, so the overhead is low when jobs span a small set of companies.
 - **Company filter**: To find jobs only at specific companies, look up their LinkedIn company ID from the URL (e.g. `linkedin.com/company/google/` → search for Google's numeric ID) and pass it in `company_ids`.
 - **Rate limits**: The scraper includes built-in jitter delays and retry logic to avoid LinkedIn rate limits. If you hit persistent 429 errors, try adding a proxy.
 

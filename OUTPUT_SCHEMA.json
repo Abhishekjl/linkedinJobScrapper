@@ -127,6 +127,18 @@
             "type": "string",
             "description": "Hiring manager info with name, title, and linkedin_url.",
             "template": "object"
+        },
+        "company_followers": {
+            "title": "Company Followers",
+            "type": "string",
+            "description": "LinkedIn follower count of the hiring company, e.g. '1,234,567'. Only populated when Fetch Company Details is enabled.",
+            "template": "text"
+        },
+        "company_employee_count": {
+            "title": "Company Employee Count",
+            "type": "string",
+            "description": "Number of employees on LinkedIn, e.g. '10,001+' or '51-200'. Only populated when Fetch Company Details is enabled.",
+            "template": "text"
         }
     },
     "views": {
@@ -146,6 +158,8 @@
                     "posted_date",
                     "experience_required",
                     "skills",
+                    "company_followers",
+                    "company_employee_count",
                     "job_url",
                     "search_title"
                 ]
@@ -165,6 +179,8 @@
                     "posted_date": { "label": "Posted", "format": "date" },
                     "experience_required": { "label": "Experience", "format": "text" },
                     "skills": { "label": "Skills", "format": "array" },
+                    "company_followers": { "label": "Followers", "format": "text" },
+                    "company_employee_count": { "label": "Employees", "format": "text" },
                     "job_url": { "label": "Job URL", "format": "link" },
                     "search_title": { "label": "Search Title", "format": "text" }
                 }

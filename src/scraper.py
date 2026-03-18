@@ -13,7 +13,7 @@ from tenacity import (
 
 from anti_detect import get_headers, get_api_headers, build_client
 from filters import SearchParams, build_search_url, build_job_detail_url, pages_needed
-from parser import parse_job_cards, parse_job_detail
+from parser import parse_job_cards, parse_job_detail, parse_company_page
 
 logger = logging.getLogger(__name__)
 
@@ -158,6 +158,42 @@ async def scrape_jobs(
             all_jobs = list(await asyncio.gather(*detail_tasks))
 
     return all_jobs
+
+
+# ── Company details fetcher ───────────────────────────────────────────────────
+
+COMPANY_CONCURRENCY = 2
+COMPANY_MIN_DELAY   = 3.0
+COMPANY_MAX_DELAY   = 6.0
+
+
+async def _fetch_company(
+    client: httpx.AsyncClient,
+    url: str,
+    semaphore: asyncio.Semaphore,
+) -> tuple[str, dict]:
+    async with semaphore:
+        try:
+            html = await _fetch(client, url, is_api=False, is_detail=True)
+            return url, parse_company_page(html)
+        except Exception as e:
+            logger.warning(f"  company {url} → Error: {e}")
+            return url, {"company_followers": None, "company_employee_count": None}
+
+
+async def scrape_company_details(
+    company_urls: list[str],
+    proxy: str | None = None,
+) -> dict[str, dict]:
+    """
+    Fetch follower count and employee count for each company URL.
+    Returns a dict mapping company_url → {company_followers, company_employee_count}.
+    """
+    sem = asyncio.Semaphore(COMPANY_CONCURRENCY)
+    async with build_client(proxies=proxy) as client:
+        tasks = [_fetch_company(client, url, sem) for url in company_urls]
+        results = await asyncio.gather(*tasks)
+    return dict(results)
 
 
 # ── Applicant count post-filter ───────────────────────────────────────────────

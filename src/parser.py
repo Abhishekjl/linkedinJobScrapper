@@ -229,6 +229,28 @@ def parse_job_detail(html: str, job_id: str) -> dict:
     return detail
 
 
+# ── Company Page Parser ───────────────────────────────────────────────────────
+
+def parse_company_page(html: str) -> dict:
+    """Parse follower count and employee count from a LinkedIn company public page."""
+    soup = BeautifulSoup(html, "lxml")
+    result = {"company_followers": None, "company_employee_count": None}
+
+    text = soup.get_text(" ", strip=True)
+
+    # Followers — e.g. "1,234,567 followers" or "12K followers"
+    m = re.search(r"([\d,]+(?:\.\d+)?[KkMm]?)\s*followers", text)
+    if m:
+        result["company_followers"] = m.group(1).strip()
+
+    # Employee count — e.g. "10,001+ employees" or "51-200 employees"
+    m = re.search(r"([\d,]+(?:\+|-[\d,]+)?)\s*employees", text, re.IGNORECASE)
+    if m:
+        result["company_employee_count"] = m.group(1).strip()
+
+    return result
+
+
 # ── Skill Extraction from Description ────────────────────────────────────────
 
 COMMON_SKILLS = [

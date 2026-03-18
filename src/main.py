@@ -18,12 +18,13 @@ Input schema:
         "easy_apply":          false,
         "under_10_applicants": false,
         "count":               50,           // total jobs per title
-        "fetch_details":       true,
-        "max_applicants":      null,         // post-filter: only jobs with <= N applicants
-        "min_applicants":      null,
-        "proxy":               null,         // "http://user:pass@host:port"
-        "company_ids":         [],           // LinkedIn company IDs
-        "industry":            ""
+        "fetch_details":         true,
+        "fetch_company_details": false,      // fetch follower + employee count per company
+        "max_applicants":        null,       // post-filter: only jobs with <= N applicants
+        "min_applicants":        null,
+        "proxy":                 null,       // "http://user:pass@host:port"
+        "company_ids":           [],         // LinkedIn company IDs
+        "industry":              ""
     }
 """
 
@@ -35,7 +36,7 @@ import sys
 from datetime import datetime
 
 from filters import SearchParams
-from scraper import scrape_jobs, filter_by_applicants
+from scraper import scrape_jobs, filter_by_applicants, scrape_company_details
 
 logging.basicConfig(
     level=logging.INFO,
@@ -110,6 +111,7 @@ async def run():
 async def _scrape(inp: dict) -> list:
     titles: list[str] = inp.get("titles", ["Software Engineer"])
     fetch_details: bool = inp.get("fetch_details", True)
+    fetch_company: bool = inp.get("fetch_company_details", False)
     proxy: str | None = inp.get("proxy")
     min_app = inp.get("min_applicants")
     max_app = inp.get("max_applicants")
@@ -117,7 +119,7 @@ async def _scrape(inp: dict) -> list:
     logger.info(f"Starting scrape for {len(titles)} title(s): {titles}")
     logger.info(f"Config: location={inp.get('location')} | type={inp.get('job_type')} | "
                 f"exp={inp.get('experience_level')} | posted={inp.get('date_posted')} | "
-                f"count={inp.get('count')} per title")
+                f"count={inp.get('count')} per title | company_details={fetch_company}")
 
     start_time = datetime.now()
 
@@ -134,6 +136,24 @@ async def _scrape(inp: dict) -> list:
         jobs = filter_by_applicants(jobs, min_app, max_app)
         all_jobs.extend(jobs)
         logger.info(f"[{title}] → {len(jobs)} jobs after applicant filter")
+
+    # Optional: enrich jobs with company follower + employee counts
+    if fetch_company and all_jobs:
+        unique_urls = list({
+            j["company_linkedin_url"]
+            for j in all_jobs
+            if j.get("company_linkedin_url")
+        })
+        logger.info(f"Fetching company details for {len(unique_urls)} unique companies...")
+        company_data = await scrape_company_details(unique_urls, proxy=proxy)
+        for job in all_jobs:
+            details = company_data.get(job.get("company_linkedin_url"), {})
+            job["company_followers"] = details.get("company_followers")
+            job["company_employee_count"] = details.get("company_employee_count")
+    else:
+        for job in all_jobs:
+            job["company_followers"] = None
+            job["company_employee_count"] = None
 
     elapsed = (datetime.now() - start_time).total_seconds()
     logger.info(f"Done. Total jobs: {len(all_jobs)} in {elapsed:.1f}s")

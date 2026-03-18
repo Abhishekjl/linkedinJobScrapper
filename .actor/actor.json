@@ -1,7 +1,50 @@
 {
-	"actorSpecification": 1,
-	"name": "linkedin-job-scraper",
-	"version": "1.0",
-	"input": "../INPUT_SCHEMA.json",
-	"output": "./OUTPUT_SCHEMA.json"
+    "actorSpecification": 1,
+    "name": "richest-linkedin-job-scraper",
+    "title": "Richest LinkedIn Job Scraper",
+    "description": "Scrape LinkedIn jobs by title, location, type, experience, recency and applicant count. Runs parallel instances per title.",
+    "version": "1.0",
+    "input": "../INPUT_SCHEMA.json",
+    "dockerfile": "../Dockerfile",
+    "storages": {
+        "dataset": {
+            "actorSpecification": 1,
+            "title": "LinkedIn Jobs",
+            "views": {
+                "overview": {
+                    "title": "Job Results",
+                    "transformation": {
+                        "fields": [
+                            "search_title", "title", "company", "location",
+                            "workplace_type", "seniority_level", "employment_type",
+                            "posted_date", "applicant_count", "easy_apply",
+                            "salary", "experience_required",
+                            "company_followers", "company_employee_count",
+                            "job_url"
+                        ]
+                    },
+                    "display": {
+                        "component": "table",
+                        "properties": {
+                            "search_title":           { "label": "Search Title" },
+                            "title":                  { "label": "Job Title" },
+                            "company":                { "label": "Company" },
+                            "location":               { "label": "Location" },
+                            "workplace_type":          { "label": "Type" },
+                            "seniority_level":         { "label": "Seniority" },
+                            "employment_type":         { "label": "Employment" },
+                            "posted_date":             { "label": "Posted" },
+                            "applicant_count":         { "label": "Applicants" },
+                            "easy_apply":              { "label": "Easy Apply" },
+                            "salary":                  { "label": "Salary" },
+                            "experience_required":     { "label": "Experience" },
+                            "company_followers":       { "label": "Followers" },
+                            "company_employee_count":  { "label": "Employees" },
+                            "job_url":                 { "label": "Job URL", "format": "link" }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

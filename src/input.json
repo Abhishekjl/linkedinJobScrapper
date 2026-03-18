@@ -1,0 +1,18 @@
+{
+    "titles": ["Software Engineer"],
+    "location": "United States",
+    "job_type": [],
+    "experience_level": [],
+    "date_posted": "week",
+    "sort_by": "recent",
+    "easy_apply": false,
+    "under_10_applicants": false,
+    "count": 5,
+    "fetch_details": true,
+    "fetch_company_details": true,
+    "min_applicants": null,
+    "max_applicants": null,
+    "company_ids": [],
+    "industry": "",
+    "proxy": null
+}
