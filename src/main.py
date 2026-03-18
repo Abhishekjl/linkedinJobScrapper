@@ -51,21 +51,11 @@ def is_apify() -> bool:
     return os.environ.get("APIFY_IS_AT_HOME") == "1"
 
 
-def read_input() -> dict:
-    """Read input from Apify or fall back to local input.json / defaults."""
-    if is_apify():
-        try:
-            from apify import Actor
-            return Actor.get_input() or {}
-        except ImportError:
-            pass
-
-    # Local: try input.json
+def read_local_input() -> dict:
+    """Fall back to local input.json or hardcoded defaults."""
     if os.path.exists("input.json"):
         with open("input.json") as f:
             return json.load(f)
-
-    # Hardcoded defaults for quick testing
     return {
         "titles":           ["AI Engineer"],
         "location":         "India",
@@ -99,11 +89,28 @@ def build_params(inp: dict, title: str) -> SearchParams:
 
 
 async def run():
-    inp = read_input()
+    if is_apify():
+        from apify import Actor
+        async with Actor:
+            inp = await Actor.get_input() or {}
+            all_jobs = await _scrape(inp)
+            await Actor.push_data(all_jobs)
+            logger.info("Pushed to Apify dataset.")
+    else:
+        inp = read_local_input()
+        all_jobs = await _scrape(inp)
+        out_path = "output.json"
+        with open(out_path, "w", encoding="utf-8") as f:
+            json.dump(all_jobs, f, indent=2, ensure_ascii=False, default=str)
+        logger.info(f"Saved to {out_path}")
+
+    return all_jobs
+
+
+async def _scrape(inp: dict) -> list:
     titles: list[str] = inp.get("titles", ["Software Engineer"])
     fetch_details: bool = inp.get("fetch_details", True)
     proxy: str | None = inp.get("proxy")
-
     min_app = inp.get("min_applicants")
     max_app = inp.get("max_applicants")
 
@@ -114,38 +121,22 @@ async def run():
 
     start_time = datetime.now()
 
-    # ── Run all titles concurrently ───────────────────────────────────────────
     tasks = [
         scrape_jobs(build_params(inp, title), fetch_details=fetch_details, proxy=proxy)
         for title in titles
     ]
     results_per_title = await asyncio.gather(*tasks)
 
-    # ── Collect & post-filter ─────────────────────────────────────────────────
     all_jobs = []
     for title, jobs in zip(titles, results_per_title):
         for job in jobs:
-            job["search_title"] = title   # tag which title this came from
+            job["search_title"] = title
         jobs = filter_by_applicants(jobs, min_app, max_app)
         all_jobs.extend(jobs)
         logger.info(f"[{title}] → {len(jobs)} jobs after applicant filter")
 
     elapsed = (datetime.now() - start_time).total_seconds()
     logger.info(f"Done. Total jobs: {len(all_jobs)} in {elapsed:.1f}s")
-
-    # ── Output ────────────────────────────────────────────────────────────────
-    if is_apify():
-        try:
-            from apify import Actor
-            await Actor.push_data(all_jobs)
-            logger.info("Pushed to Apify dataset.")
-        except ImportError:
-            pass
-    else:
-        out_path = "output.json"
-        with open(out_path, "w", encoding="utf-8") as f:
-            json.dump(all_jobs, f, indent=2, ensure_ascii=False, default=str)
-        logger.info(f"Saved to {out_path}")
 
     return all_jobs
 

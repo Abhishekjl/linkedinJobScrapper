@@ -1,0 +1,174 @@
+{
+    "actorSpecification": 1,
+    "actorOutputSchemaVersion": 1,
+    "properties": {
+        "job_id": {
+            "title": "Job ID",
+            "type": "string",
+            "description": "LinkedIn internal job ID.",
+            "template": "text"
+        },
+        "title": {
+            "title": "Job Title",
+            "type": "string",
+            "description": "Title of the job posting.",
+            "template": "text"
+        },
+        "company": {
+            "title": "Company",
+            "type": "string",
+            "description": "Name of the hiring company.",
+            "template": "text"
+        },
+        "company_linkedin_url": {
+            "title": "Company LinkedIn URL",
+            "type": "string",
+            "description": "LinkedIn profile URL of the company.",
+            "template": "link"
+        },
+        "location": {
+            "title": "Location",
+            "type": "string",
+            "description": "Job location as shown on LinkedIn.",
+            "template": "text"
+        },
+        "job_url": {
+            "title": "Job URL",
+            "type": "string",
+            "description": "Direct link to the LinkedIn job posting.",
+            "template": "link"
+        },
+        "posted_date": {
+            "title": "Posted Date",
+            "type": "string",
+            "description": "ISO date when the job was posted.",
+            "template": "date"
+        },
+        "posted_text": {
+            "title": "Posted Text",
+            "type": "string",
+            "description": "Human-readable posting time, e.g. '2 days ago'.",
+            "template": "text"
+        },
+        "salary": {
+            "title": "Salary",
+            "type": "string",
+            "description": "Salary range if listed by the employer.",
+            "template": "text"
+        },
+        "easy_apply": {
+            "title": "Easy Apply",
+            "type": "string",
+            "description": "Whether LinkedIn Easy Apply is available for this job.",
+            "template": "boolean"
+        },
+        "search_title": {
+            "title": "Search Title",
+            "type": "string",
+            "description": "The input job title that matched this result.",
+            "template": "text"
+        },
+        "description": {
+            "title": "Job Description",
+            "type": "string",
+            "description": "Full job description text. Only populated when Fetch Full Job Details is enabled.",
+            "template": "text"
+        },
+        "experience_required": {
+            "title": "Experience Required",
+            "type": "string",
+            "description": "Years of experience extracted from the description, e.g. '3-5 years'.",
+            "template": "text"
+        },
+        "seniority_level": {
+            "title": "Seniority Level",
+            "type": "string",
+            "description": "LinkedIn seniority level, e.g. 'Mid-Senior level'.",
+            "template": "text"
+        },
+        "employment_type": {
+            "title": "Employment Type",
+            "type": "string",
+            "description": "e.g. 'Full-time', 'Contract'.",
+            "template": "text"
+        },
+        "job_function": {
+            "title": "Job Function",
+            "type": "string",
+            "description": "LinkedIn job function category, e.g. 'Engineering'.",
+            "template": "text"
+        },
+        "industries": {
+            "title": "Industries",
+            "type": "string",
+            "description": "Industry category as listed on LinkedIn.",
+            "template": "text"
+        },
+        "workplace_type": {
+            "title": "Workplace Type",
+            "type": "string",
+            "description": "Normalized workplace type: 'Remote', 'Hybrid', or 'On-site'.",
+            "template": "text"
+        },
+        "applicant_count": {
+            "title": "Applicant Count",
+            "type": "string",
+            "description": "Number of applicants as shown by LinkedIn. Null if not displayed.",
+            "template": "number"
+        },
+        "skills": {
+            "title": "Skills",
+            "type": "string",
+            "description": "List of skills extracted from the job description.",
+            "template": "array"
+        },
+        "job_poster": {
+            "title": "Job Poster",
+            "type": "string",
+            "description": "Hiring manager info with name, title, and linkedin_url.",
+            "template": "object"
+        }
+    },
+    "views": {
+        "overview": {
+            "title": "Job Results",
+            "transformation": {
+                "fields": [
+                    "title",
+                    "company",
+                    "location",
+                    "workplace_type",
+                    "seniority_level",
+                    "employment_type",
+                    "salary",
+                    "applicant_count",
+                    "easy_apply",
+                    "posted_date",
+                    "experience_required",
+                    "skills",
+                    "job_url",
+                    "search_title"
+                ]
+            },
+            "display": {
+                "component": "table",
+                "properties": {
+                    "title": { "label": "Job Title", "format": "text" },
+                    "company": { "label": "Company", "format": "text" },
+                    "location": { "label": "Location", "format": "text" },
+                    "workplace_type": { "label": "Type", "format": "text" },
+                    "seniority_level": { "label": "Seniority", "format": "text" },
+                    "employment_type": { "label": "Employment", "format": "text" },
+                    "salary": { "label": "Salary", "format": "text" },
+                    "applicant_count": { "label": "Applicants", "format": "number" },
+                    "easy_apply": { "label": "Easy Apply", "format": "boolean" },
+                    "posted_date": { "label": "Posted", "format": "date" },
+                    "experience_required": { "label": "Experience", "format": "text" },
+                    "skills": { "label": "Skills", "format": "array" },
+                    "job_url": { "label": "Job URL", "format": "link" },
+                    "search_title": { "label": "Search Title", "format": "text" }
+                }
+            }
+        }
+    }
+}

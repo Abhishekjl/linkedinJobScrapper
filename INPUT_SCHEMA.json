@@ -25,8 +25,11 @@
             "type": "array",
             "description": "Filter by workplace type.",
             "editor": "select",
-            "enum": ["remote", "hybrid", "onsite"],
-            "enumTitles": ["Remote", "Hybrid", "On-site"],
+            "items": {
+                "type": "string",
+                "enum": ["remote", "hybrid", "onsite"],
+                "enumTitles": ["Remote", "Hybrid", "On-site"]
+            },
             "default": []
         },
         "experience_level": {
@@ -34,8 +37,11 @@
             "type": "array",
             "description": "Filter by seniority level.",
             "editor": "select",
-            "enum": ["internship", "entry", "mid", "senior", "director", "executive"],
-            "enumTitles": ["Internship", "Entry Level", "Mid Level", "Senior", "Director", "Executive"],
+            "items": {
+                "type": "string",
+                "enum": ["internship", "entry", "mid", "senior", "director", "executive"],
+                "enumTitles": ["Internship", "Entry Level", "Mid Level", "Senior", "Director", "Executive"]
+            },
             "default": []
         },
         "date_posted": {

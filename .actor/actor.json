@@ -1,0 +1,7 @@
+{
+	"actorSpecification": 1,
+	"name": "linkedin-job-scraper",
+	"version": "1.0",
+	"input": "../INPUT_SCHEMA.json",
+	"output": "./OUTPUT_SCHEMA.json"
+}
