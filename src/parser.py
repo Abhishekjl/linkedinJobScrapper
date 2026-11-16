@@ -12,7 +12,7 @@ def normalize_workplace_type(raw: str) -> str:
     """
     if not raw:
         return "On-site"
-    text = raw.lower()
+    text = re.sub(r"\b(?:not|no|non)[\s\-]+(?:a\s+)?remote\b", " ", raw.lower())
     if re.search(r"\bremote\b", text):
         return "Remote"
     if re.search(r"\bhybrid\b", text):

@@ -28,6 +28,27 @@ EXPERIENCE_MAP = {
     "executive":  "6",
 }
 
+# LinkedIn ignores f_WT / f_JT for logged-out search, so job_type and
+# employment_type are applied after the detail page is fetched.
+EMPLOYMENT_TYPE_MAP = {
+    "full-time":  "full-time",
+    "full time":  "full-time",
+    "fulltime":   "full-time",
+    "part-time":  "part-time",
+    "part time":  "part-time",
+    "parttime":   "part-time",
+    "contract":   "contract",
+    "contractor": "contract",
+    "temporary":  "temporary",
+    "temp":       "temporary",
+    "internship": "internship",
+    "volunteer":  "volunteer",
+    "other":      "other",
+}
+
+# Guest search returns 10 cards per page regardless of pageSize
+GUEST_PAGE_SIZE = 10
+
 DATE_POSTED_MAP = {
     "24h":    "r86400",
     "day":    "r86400",
@@ -68,6 +89,7 @@ class SearchParams:
 
     # Job filters
     job_type: list[str] = field(default_factory=list)        # ["remote","hybrid"]
+    employment_type: list[str] = field(default_factory=list) # ["contract","part-time"]
     experience_level: list[str] = field(default_factory=list) # ["mid","senior"]
     date_posted: str = "any"                   # "24h","week","month","any"
     easy_apply: bool = False
@@ -203,5 +225,5 @@ def pages_needed(total_wanted: int) -> list[int]:
     start = 0
     while start < total_wanted:
         offsets.append(start)
-        start += 25
+        start += GUEST_PAGE_SIZE
     return offsets

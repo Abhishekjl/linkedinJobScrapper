@@ -1,6 +1,7 @@
 import asyncio
 import random
 import logging
+import re
 
 import httpx
 from tenacity import (
@@ -12,10 +13,12 @@ from tenacity import (
 )
 
 from anti_detect import get_headers, get_api_headers, build_client
-from filters import SearchParams, build_search_url, build_job_detail_url, pages_needed
+from filters import SearchParams, build_search_url, build_job_detail_url, pages_needed, EMPLOYMENT_TYPE_MAP
 from parser import parse_job_cards, parse_job_detail, parse_company_page
 
 logger = logging.getLogger(__name__)
+
+REMOTE_RE = re.compile(r"\bremote\b", re.I)
 
 # ── Concurrency limits ────────────────────────────────────────────────────────
 SEARCH_CONCURRENCY = 2    # parallel search page fetches
@@ -101,7 +104,11 @@ async def _fetch_job_detail(
         try:
             html = await _fetch(client, url, is_api=False, is_detail=True)
             detail = parse_job_detail(html, job["job_id"])
-            return {**job, **detail}
+            merged = {**job, **detail}
+            # Card title/location is the most explicit remote signal
+            if REMOTE_RE.search(f"{job.get('title', '')} {job.get('location', '')}"):
+                merged["workplace_type"] = "Remote"
+            return merged
         except httpx.HTTPStatusError as e:
             logger.warning(f"  detail {job['job_id']} → HTTP {e.response.status_code}, using card data only")
             return job
@@ -157,6 +164,9 @@ async def scrape_jobs(
             ]
             all_jobs = list(await asyncio.gather(*detail_tasks))
 
+            # 4. LinkedIn ignores f_WT / f_JT when logged out — filter on detail fields
+            all_jobs = filter_by_detail(all_jobs, params.job_type, params.employment_type)
+
     return all_jobs
 
 
@@ -197,6 +207,26 @@ async def scrape_company_details(
 
 
 # ── Applicant count post-filter ───────────────────────────────────────────────
+
+def filter_by_detail(
+    jobs: list[dict],
+    job_type: list[str],
+    employment_type: list[str],
+) -> list[dict]:
+    """Keep jobs matching workplace / employment type; jobs without detail data pass."""
+    wanted_wt = {jt.lower().strip().replace("onsite", "on-site") for jt in job_type}
+    wanted_et = {EMPLOYMENT_TYPE_MAP.get(et.lower().strip(), et.lower().strip()) for et in employment_type}
+    filtered = []
+    for job in jobs:
+        wt = (job.get("workplace_type") or "").lower()
+        et = (job.get("employment_type") or "").lower()
+        if wanted_wt and wt and wt not in wanted_wt:
+            continue
+        if wanted_et and et and et not in wanted_et:
+            continue
+        filtered.append(job)
+    return filtered
+
 
 def filter_by_applicants(
     jobs: list[dict],

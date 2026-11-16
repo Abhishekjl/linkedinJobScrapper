@@ -44,6 +44,7 @@ class ScrapeJobsRequest(BaseModel):
     titles: list[str] = Field(..., min_length=1, example=["AI Engineer", "ML Engineer"])
     location: str = "United States"
     job_type: list[str] = []            # ["remote", "hybrid", "onsite"]
+    employment_type: list[str] = []     # ["contract", "part-time", "temporary"]
     experience_level: list[str] = []    # ["mid", "senior"]
     date_posted: str = "week"           # "24h" | "week" | "month" | "any"
     sort_by: str = "recent"             # "recent" | "relevant"
@@ -85,6 +86,7 @@ async def api_scrape_jobs(req: ScrapeJobsRequest):
                 title=title,
                 location=req.location,
                 job_type=req.job_type,
+                employment_type=req.employment_type,
                 experience_level=req.experience_level,
                 date_posted=req.date_posted,
                 sort_by=req.sort_by,
