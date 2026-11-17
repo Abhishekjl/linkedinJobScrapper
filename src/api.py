@@ -52,6 +52,7 @@ class ScrapeJobsRequest(BaseModel):
     under_10_applicants: bool = False
     count: int = Field(default=25, ge=1, le=500)
     fetch_details: bool = True
+    fetch_company_details: bool = False
     min_applicants: Optional[int] = None
     max_applicants: Optional[int] = None
     company_ids: list[str] = []
@@ -112,6 +113,23 @@ async def api_scrape_jobs(req: ScrapeJobsRequest):
             job["search_title"] = title
         jobs = filter_by_applicants(jobs, req.min_applicants, req.max_applicants)
         all_jobs.extend(jobs)
+
+    # Optional: enrich jobs with company follower + employee counts (same as main.py)
+    if req.fetch_company_details and all_jobs:
+        unique_urls = list({
+            j["company_linkedin_url"]
+            for j in all_jobs
+            if j.get("company_linkedin_url")
+        })
+        company_data = await scrape_company_details(unique_urls, proxy=req.proxy)
+        for job in all_jobs:
+            details = company_data.get(job.get("company_linkedin_url"), {})
+            job["company_followers"] = details.get("company_followers")
+            job["company_employee_count"] = details.get("company_employee_count")
+    else:
+        for job in all_jobs:
+            job["company_followers"] = None
+            job["company_employee_count"] = None
 
     return {"count": len(all_jobs), "jobs": all_jobs}
 

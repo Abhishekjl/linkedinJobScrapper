@@ -1,0 +1,19 @@
+# FastAPI server image (src/api.py). The main Dockerfile is the Apify actor build.
+FROM python:3.11-slim
+
+WORKDIR /usr/src/app
+
+# Scraper deps from requirements.txt minus the Apify SDK (not needed by the API), plus the web server.
+RUN pip install --no-cache-dir \
+    "httpx[http2]>=0.27.0" \
+    "beautifulsoup4>=4.12.0" \
+    "lxml>=5.1.0" \
+    "tenacity>=8.2.0" \
+    "fake-useragent>=1.4.0" \
+    "fastapi>=0.110" \
+    "uvicorn[standard]>=0.29"
+
+COPY src/ ./src/
+
+EXPOSE 8000
+CMD ["uvicorn", "api:app", "--app-dir", "src", "--host", "0.0.0.0", "--port", "8000"]
