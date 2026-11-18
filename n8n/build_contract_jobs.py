@@ -1,7 +1,8 @@
 """Generate the "Contract Jobs - Remote AI" n8n workflow JSON.
 
 Usage: python3 -I build_contract_jobs.py <out.json> [--test]
-Code lives in contract_jobs/*.js. The Telegram bot URL and chat id are copied from the Job Hunt workflow export.
+Code lives in contract_jobs/*.js. The Telegram bot URL and chat id are copied from the Job Hunt workflow export;
+the Apify token is read from /data/n8n/apify.key (posts fallback is off without it).
 --test: two searches only, separate workflow id.
 """
 import json
@@ -12,6 +13,7 @@ import uuid
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 JOB_HUNT = "/data/job_hunt_complete_local.json"
+APIFY_KEY = "/data/n8n/apify.key"   # Apify API token, kept outside the repo
 
 out_path = sys.argv[1]
 TEST = "--test" in sys.argv[2:]
@@ -21,7 +23,9 @@ jh = json.load(open(JOB_HUNT))
 jh = jh[0] if isinstance(jh, list) else jh
 tg = next(n["parameters"] for n in jh["nodes"] if n["name"] == "Send Telegram")
 tg_chat = re.search(r"chat_id:\s*'([^']+)'", tg["jsonBody"]).group(1)
-settings_js = read("settings.js").replace("__TELEGRAM_URL__", tg["url"]).replace("__TELEGRAM_CHAT_ID__", tg_chat)
+apify_token = open(APIFY_KEY).read().strip() if os.path.exists(APIFY_KEY) else ""
+settings_js = (read("settings.js").replace("__TELEGRAM_URL__", tg["url"]).replace("__TELEGRAM_CHAT_ID__", tg_chat)
+               .replace("__APIFY_TOKEN__", apify_token))
 if TEST:
     settings_js = settings_js.replace("return [{ json: {", "// TEST overrides below\nconst cfg = {", 1)
     settings_js = settings_js.rstrip().removesuffix("}}];") + """};
@@ -72,7 +76,8 @@ note = {"id": nid(), "name": "How it works", "type": "n8n-nodes-base.stickyNote"
         "parameters": {"width": 1000, "height": 280, "content":
             "## Contract Jobs - Remote AI\n"
             "Every 4 hours: runs the LinkedIn searches in **Settings** (past 24 h) through the self-hosted scraper; "
-            "**Fetch Posts** adds recent LinkedIn hiring posts (web search for linkedin.com/posts, read logged out, marked 📣). "
+            "**Fetch Posts** adds recent LinkedIn hiring posts (web search for linkedin.com/posts, read logged out, marked 📣; "
+            "Apify post search when web search finds too few, capped per month). "
             "**Filter Jobs** keeps a job or post only if it is contract / part-time / freelance (LinkedIn type, or the title says so), "
             "remote (a timezone in the JD counts), an AI title or an AI keyword in the JD (LangChain, LangGraph, LLM, RAG, "
             "multi-agent...), has nothing from the drop list (PF, EOR, C2H, W-2, IR35, US/UK/EU work authorization, on-site, hybrid), "

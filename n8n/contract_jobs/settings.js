@@ -35,6 +35,15 @@ return [{ json: {
   post_max_age_days: 3,
   max_posts_per_run: 30,            // post pages read per run
 
+  // Fallback when web search finds fewer than apify_min_posts new posts (Google often blocks this server):
+  // Apify "LinkedIn Post Search (No Cookies)", newest posts of the past 24 h. $0.002 a post; free plan $5/month ≈ 2,500 posts.
+  apify_token: '__APIFY_TOKEN__',
+  apify_actor: 'harvestapi~linkedin-post-search',
+  apify_min_posts: 3,
+  apify_queries: ['AI engineer contract remote', 'LLM engineer freelance', 'machine learning engineer contract remote'],
+  apify_posts_per_query: 4,         // 3 x 4 = 12 posts a run, at most 72 a day
+  apify_max_posts_per_month: 2000,  // stops here to stay inside the free credit
+
   // A job is relevant if its title is an AI role OR the JD mentions any one of these.
   jd_keywords: ['LangChain', 'LangGraph', 'LLM', 'LLMs', 'multi-agent', 'multiagent', 'agentic', 'RAG',
                 'retrieval-augmented', 'generative AI', 'GenAI'],
