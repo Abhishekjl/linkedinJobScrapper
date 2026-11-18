@@ -26,6 +26,7 @@ if TEST:
     settings_js = settings_js.replace("return [{ json: {", "// TEST overrides below\nconst cfg = {", 1)
     settings_js = settings_js.rstrip().removesuffix("}}];") + """};
 cfg.searches = [cfg.searches[0], cfg.searches[6]];
+cfg.post_queries = cfg.post_queries.slice(0, 2);
 return [{ json: cfg }];"""
 
 nid = lambda: str(uuid.uuid4())
@@ -50,6 +51,7 @@ chain = [
          "  count: S.count_per_search, fetch_details: true } }));"),
     # One search at a time: the scraper runs titles of one request in parallel, LinkedIn rate-limits bursts.
     post("Scrape LinkedIn", f"={{{{ {SET}.scraper_url }}}}", "={{ JSON.stringify($json) }}", 1800000, 3000),
+    code("Fetch Posts", read("fetch_posts.js")),
     code("Filter Jobs", read("filter.js")),
     post("Send Telegram", f"={{{{ {SET}.telegram_url }}}}",
          f"={{{{ JSON.stringify({{ chat_id: {SET}.telegram_chat_id, text: $json.text, parse_mode: 'HTML', disable_web_page_preview: true }}) }}}}",
@@ -58,7 +60,7 @@ chain = [
          "const state = $getWorkflowStaticData('global');\nstate.sent = state.sent || {};\n"
          "const src = $('Filter Jobs').all();\nlet sent = 0;\n"
          "$input.all().forEach((it, i) => {\n  if (it.json.error || it.json.ok === false || !src[i]) return;\n"
-         "  state.sent[src[i].json.job_id] = state.sent[src[i].json.key] = Date.now();\n  sent++;\n});\n"
+         "  for (const k of src[i].json.sent_keys) state.sent[k] = Date.now();\n  sent++;\n});\n"
          "return [{ json: { sent, failed: src.length - sent } }];"),
 ]
 triggers = [
@@ -69,12 +71,14 @@ triggers = [
 note = {"id": nid(), "name": "How it works", "type": "n8n-nodes-base.stickyNote", "typeVersion": 1, "position": [208, -180],
         "parameters": {"width": 1000, "height": 280, "content":
             "## Contract Jobs - Remote AI\n"
-            "Every 4 hours: runs the LinkedIn searches in **Settings** (past 24 h) through the self-hosted scraper, then "
-            "**Filter Jobs** keeps a job only if it is contract / part-time / freelance (LinkedIn type, or the title says so), "
+            "Every 4 hours: runs the LinkedIn searches in **Settings** (past 24 h) through the self-hosted scraper; "
+            "**Fetch Posts** adds recent LinkedIn hiring posts (web search for linkedin.com/posts, read logged out, marked 📣). "
+            "**Filter Jobs** keeps a job or post only if it is contract / part-time / freelance (LinkedIn type, or the title says so), "
             "remote (a timezone in the JD counts), an AI title or an AI keyword in the JD (LangChain, LangGraph, LLM, RAG, "
             "multi-agent...), has nothing from the drop list (PF, EOR, C2H, W-2, IR35, US/UK/EU work authorization, on-site, hybrid), "
             "and is listed in India 🇮🇳, says Global/anywhere 🌍, or names a timezone 🕒.\n\n"
-            "Each job is sent to Telegram once (remembered 45 days; only scheduled runs remember). "
+            "A timezone counts as global only outside US/Canada/UK/EU listings. One Telegram message per company; "
+            "each job is sent once (remembered 45 days; only scheduled runs remember). "
             "Edit searches and keywords in **Settings**, rules at the top of **Filter Jobs**."}}
 link = lambda a, b: {a: {"main": [[{"node": b, "type": "main", "index": 0}]]}}
 connections = {}
